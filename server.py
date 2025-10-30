@@ -3,6 +3,8 @@ import requests
 import os
 
 app = Flask(__name__, static_folder='')
+from flask_cors import CORS
+CORS(app)
 
 # === СТАТИЧЕСКИЕ ФАЙЛЫ (HTML) ===
 @app.route('/')
