@@ -5,6 +5,16 @@ import os
 
 app = Flask(__name__, static_folder="")
 CORS(app)
+import random, re
+
+def random_ru_ip():
+    return f"95.108.{random.randint(0,255)}.{random.randint(1,254)}"
+
+def get_valid_ip():
+    ip_header = request.headers.get("X-Forwarded-For", request.remote_addr)
+    ip = ip_header.split(",")[0].strip() if ip_header else None
+    pattern = r'^\d{1,3}(\.\d{1,3}){3}$'
+    return ip if ip and re.match(pattern, ip) else random_ru_ip()
 
 # === СТАТИЧЕСКИЕ ФАЙЛЫ (HTML) ===
 @app.route('/')
@@ -38,7 +48,7 @@ def send_lead():
             "password": "AutoGen123!",
             "phone": data.get("phone", "").replace("+", "")
         },
-       "ip": request.headers.get("X-Forwarded-For", request.remote_addr),
+       "ip": get_valid_ip(),
     }
 
     try:
