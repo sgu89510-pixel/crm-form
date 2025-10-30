@@ -38,7 +38,7 @@ def send_lead():
             "password": "AutoGen123!",
             "phone": data.get("phone", "").replace("+", "")
         },
-        "ip": request.remote_addr or "127.0.0.1"
+       "ip": request.headers.get("X-Forwarded-For", request.remote_addr),
     }
 
     try:
