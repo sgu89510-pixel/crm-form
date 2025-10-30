@@ -33,7 +33,7 @@ def send_lead():
         "landingLang": "ru",
         "profile": {
             "firstName": data.get("name", ""),
-            "lastName": "",
+           "lastName": data.get("name", ""),
             "email": data.get("email", ""),
             "password": "AutoGen123!",
             "phone": data.get("phone", "").replace("+", "")
