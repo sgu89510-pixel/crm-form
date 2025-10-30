@@ -16,25 +16,33 @@ def index():
 def send_lead():
     data = request.json
 
-    # Проверяем, чтобы были переданы нужные поля
-    if not all(k in data for k in ("name", "email", "phone")):
-        return jsonify({"error": "Missing required fields"}), 400
-
-    # Добавляем идентификаторы CRM
-    data["affc"] = "AFF-74J7Q3VWER"
-    data["bxc"] = "BX-2FIXYD4ZPIXOW"
-    data["vtc"] = "VT-HP8XSRMKVS6E7"
-
-    # Правильный URL API
-    crm_url = "https://golden-vault.hn-crm.com/api/v2/leads/create"
-
+    crm_url = "https://golden-vault.hn-crm.com/api/external/integration/lead"
     headers = {
         "Content-Type": "application/json",
         "x-api-key": "573d022a-83fd-4ea9-879f-0e6dee76374f"
     }
 
+    payload = {
+        "affc": "AFF-74J7Q3VWER",
+        "bxc": "BX-2FIXYD4ZPIXOW",
+        "vtc": "VT-HP8XSRMKVS6E7",
+        "funnel": "cryptoedu",
+        "landingURL": "https://walloram.onrender.com",
+        "geo": "RU",
+        "lang": "ru",
+        "landingLang": "ru",
+        "profile": {
+            "firstName": data.get("name", ""),
+            "lastName": "",
+            "email": data.get("email", ""),
+            "password": "AutoGen123!",
+            "phone": data.get("phone", "").replace("+", "")
+        },
+        "ip": request.remote_addr or "127.0.0.1"
+    }
+
     try:
-        response = requests.post(crm_url, json=data, headers=headers, timeout=30)
+        response = requests.post(crm_url, headers=headers, json=payload, timeout=30)
         return jsonify({
             "crm_response": response.text,
             "crm_status": response.status_code,
@@ -42,7 +50,6 @@ def send_lead():
         })
     except Exception as e:
         return jsonify({"error": str(e), "success": False})
-
 # === Запуск сервера ===
 if  __name__  == "__main__":
     port = int(os.environ.get("PORT", 10000))
