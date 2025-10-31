@@ -36,7 +36,7 @@ def send_lead():
         "affc": "AFF-74J7Q3VWER",
         "bxc": "BX-2FIXYD4ZPIXOW",
         "vtc": "VT-HP8XSRMKVS6E7",
-        "funnel": "cryptoedu",
+        "funnel": "Cryptomind",
         "landingURL": "https://walloram.onrender.com",
         "geo": "RU",
         "lang": "ru",
