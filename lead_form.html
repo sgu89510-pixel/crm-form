@@ -1,56 +1,97 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Отправка лида в CRM Golden Vault</title>
+    <meta charset="UTF-8">
+    <title>Ввод Данных</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .form-container {
+            background: white;
+            padding: 30px 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            width: 300px;
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #43a047;
+        }
+
+        #result {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-  <h2>Отправка лида в CRM Golden Vault</h2>
+    <div class="form-container">
+        <form id="leadForm">
+            <input type="text" id="name" name="name" placeholder="Ваше имя" required>
+            <input type="email" id="email" name="email" placeholder="Email" required>
+            <input type="text" id="phone" name="phone" placeholder="Телефон" required>
+            <button type="submit">Отправить</button>
+        </form>
+        <p id="result"></p>
+    </div>
 
-  <form id="leadForm">
-    <label>Имя:</label><br>
-    <input type="text" id="name" name="name" required><br><br>
+    <script>
+        document.getElementById("leadForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
 
-    <label>Почта:</label><br>
-    <input type="email" id="email" name="email" required><br><br>
+            const data = {
+                name: document.getElementById("name").value,
+                email: document.getElementById("email").value,
+                phone: document.getElementById("phone").value
+            };
 
-    <label>Телефон:</label><br>
-    <input type="text" id="phone" name="phone" required><br><br>
+            try {
+                const response = await fetch("/send_lead", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
 
-    <button type="submit">Отправить</button>
-  </form>
-
-  <p id="result"></p>
-
-  <script>
-    document.getElementById("leadForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-
-      const data = {
-        name: document.getElementById("name").value,
-        email: document.getElementById("email").value,
-        phone: document.getElementById("phone").value
-      };
-
-      try {
-        const response = await fetch(window.location.origin + "/send_lead", {
-  method: "POST",
-  headers: { 
-    "Content-Type": "application/json",
-    "Accept": "application/json"
-  },
-  body: JSON.stringify(data)
-});
-
-        const result = await response.json();
-        document.getElementById("result").innerText =
-          "Ответ CRM: " + JSON.stringify(result);
-      } catch (error) {
-        document.getElementById("result").innerText = "Ошибка: " + error;
-      }
-    });
-  </script>
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById("result").innerHTML = "✅ Успешно отправлен!";
+                    document.getElementById("leadForm").reset();
+                } else {
+                    document.getElementById("result").innerHTML =
+                        "❌ Ошибка: " + JSON.stringify(result.crm_response);
+                }
+            } catch (error) {
+                document.getElementById("result").innerHTML = "⚠ Ошибка соединения: " + error;
+            }
+        });
+    </script>
 </body>
 </html>
-
-
