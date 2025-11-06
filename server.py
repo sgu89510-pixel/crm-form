@@ -33,14 +33,26 @@ def send_lead():
             "password": "AutoGen123!",
             "phone": data.get("phone", "").replace("+", "").replace("-", "").replace(" ", "")
         },
-        "ip": request.remote_addr or "8.8.8.8",
-        "funnel": "Cryptomind",
-        "landingURL": "https://walloram.onrender.com/",
-        "geo": "RU",
-        "lang": "ru",
-        "landingLang": "ru",
-        "userAgent": request.headers.get("User-Agent"),
-    }
+      ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+payload = {
+    "affc": "AFF-74J7Q3VWER",
+    "bxc": "BX-2FIXYD4ZPIXOW",
+    "vtc": "VT-HP8XSRMKVS6E7",
+    "profile": {
+        "firstName": data.get("name", ""),
+        "lastName": "Testov",
+        "email": data.get("email", ""),
+        "password": "AutoGen123!",
+        "phone": data.get("phone", "").replace("+", "").replace("-", "").replace(" ", "")
+    },
+    "ip": ip.split(",")[0] if ip else "127.0.0.1",
+    "funnel": "Cryptomind",
+    "landingURL": "https://walloram.onrender.com/",
+    "geo": "RU",
+    "lang": "ru",
+    "landingLang": "ru",
+    "userAgent": request.headers.get("User-Agent")
+}
 
     try:
         response = requests.post(crm_url, headers=headers, json=payload, timeout=30)
