@@ -34,7 +34,7 @@ def send_lead():
             "phone": data.get("phone", "").replace("+", "").replace("-", "").replace(" ", "")
         },
         "ip": request.remote_addr or "8.8.8.8",
-        "funnel": "cryptomind",
+        "funnel": "Cryptomind",
         "landingURL": "https://walloram.onrender.com/",
         "geo": "RU",
         "lang": "ru",
