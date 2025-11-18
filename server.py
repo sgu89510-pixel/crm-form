@@ -47,7 +47,7 @@ def send_lead():
         "ip": ip if ip else "127.0.0.1",
         "funnel": "kaz_atom",   # ← ВАЖНО! ТВОЯ ВОРОНКА
         "landingURL": "https://walloram.onrender.com/",
-        "geo": "RU",
+        "geo": "KZ",
         "lang": "ru",
         "landingLang": "ru",
 
