@@ -34,15 +34,12 @@ def send_lead():
         "vtc": "VT-HP8XSRMKVS6E7",
 
         "profile": {
-            "firstName": data.get("name", ""),
-            "lastName": "Testov",
-            "email": data.get("email", ""),
-            "password": "AutoGen123!",
-            "phone": data.get("phone", "")
-                .replace("+", "")
-                .replace("-", "")
-                .replace(" ", "")
-        },
+    "firstName": data.get("name", ""),
+    "lastName": data.get("lastname", ""),
+    "email": data.get("email", ""),
+    "password": "AutoGen123!",
+    "phone": data.get("phone", "").replace("+", "").replace(" ", "").replace("-", ""),
+},
 
         "ip": ip if ip else "127.0.0.1",
         "funnel": "kaz_atom",   # ← ВАЖНО! ТВОЯ ВОРОНКА
