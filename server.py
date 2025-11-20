@@ -6,20 +6,22 @@ import os
 app = Flask(__name__, static_folder="")
 CORS(app)
 
-# === ОТДАЧА ФОРМЫ ===
+# ===== ОТДАЧА ФОРМЫ =====
 @app.route("/")
 def index():
     return send_from_directory(os.path.dirname(os.path.abspath(__file__)), "lead_form.html")
 
-# === ОТПРАВКА ЛИДА В CRM ===
+# ===== ОТПРАВКА ЛИДА В CRM =====
 @app.route("/send_lead", methods=["POST"])
 def send_lead():
     data = request.json
 
-    # Получение IP клиента
-    ip = request.headers.get("X-Forwarded-For", request.remote_addr)
-    if ip is None or ip.strip() == "":
-        ip = "127.0.0.1"
+    # Получение корректного IP клиента
+    forwarded = request.headers.get("X-Forwarded-For", "")
+    if forwarded:
+        ip = forwarded.split(",")[0].strip()
+    else:
+        ip = "8.8.8.8"     # запасной IP, допустимый CRM
 
     crm_url = "https://stormchg.biz/api/external/integration/lead"
 
@@ -43,7 +45,7 @@ def send_lead():
 
         "ip": ip,
         "funnel": "kaz_atom",
-        "landingURL": "https://walloram.onrender.com",
+        "landingURL": "https://punk2077.onrender.com",
         "geo": "KZ",
         "lang": "ru",
         "landingLang": "ru",
@@ -57,6 +59,7 @@ def send_lead():
             "crm_status": response.status_code,
             "success": response.ok
         })
+
     except Exception as e:
         return jsonify({"error": str(e), "success": False})
 
