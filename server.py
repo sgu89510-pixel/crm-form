@@ -6,7 +6,8 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return send_from_directory("", "lead_form.html")   # твоя форма
+    return send_from_directory("", "lead_form.html")
+
 
 @app.route("/submit", methods=["POST"])
 def submit():
@@ -16,12 +17,9 @@ def submit():
         if not data:
             return jsonify({"success": False, "error": "Нет данных"}), 400
 
-        # IP корректно (Render → X-Forwarded-For)
+        # IP пользователя
         forwarded = request.headers.get("X-Forwarded-For", "")
-        if forwarded:
-            ip = forwarded.split(",")[0]
-        else:
-            ip = request.remote_addr
+        ip = forwarded.split(",")[0] if forwarded else request.remote_addr
 
         payload = {
             "affc": "AFF-74J7Q3VWER",
@@ -33,7 +31,7 @@ def submit():
                 "lastName": data.get("lastName", ""),
                 "email": data.get("email", ""),
                 "password": "Temp12345!",
-                "phone": data.get("phone", "").replace("+", "").replace(" ", "")
+                "phone": data.get("phone", "").replace("+", "")
             },
 
             "ip": ip,
@@ -42,8 +40,8 @@ def submit():
             "geo": "RU",
             "lang": "ru",
             "landingLang": "ru",
-            "userAgent": request.headers.get("User-Agent"),
-            "comment": None
+            "comment": None,
+            "userAgent": request.headers.get("User-Agent")
         }
 
         CRM_URL = "https://golden-vault.hn-crm.com/api/external/integration/lead"
@@ -53,7 +51,7 @@ def submit():
             "Api-Key": "573d022a-83fd-4ea9-879f-0e6dee76374f"
         }
 
-        response = requests.post(CRM_URL, json=payload, headers=headers, timeout=20)
+        response = requests.post(CRM_URL, json=payload, headers=headers, timeout=25)
 
         return jsonify({
             "success": True,
@@ -67,5 +65,5 @@ def submit():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
