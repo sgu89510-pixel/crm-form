@@ -8,6 +8,7 @@ app = Flask(__name__)
 def index():
     return send_from_directory("", "lead_form.html")
 
+
 @app.route("/submit", methods=["POST"])
 def submit():
     try:
@@ -16,21 +17,27 @@ def submit():
         if not data:
             return jsonify({"success": False, "error": "Нет данных"}), 400
 
-        # Корректное получение IP
+        # Определяем IP лида
         forwarded = request.headers.get("X-Forwarded-For", "")
-        ip = forwarded.split(",")[0] if forwarded else request.remote_addr
+        if forwarded:
+            ip = forwarded.split(",")[0]
+        else:
+            ip = request.remote_addr
 
+        # Готовим payload строго по CRM
         payload = {
             "affc": "AFF-74J7Q3VWER",
             "bxc": "BX-2FIXYD4ZPIXOW",
             "vtc": "VT-HP8XSRMKVS6E7",
+
             "profile": {
                 "firstName": data.get("firstName", ""),
                 "lastName": data.get("lastName", ""),
                 "email": data.get("email", ""),
                 "password": "Temp12345!",
-                "phone": data.get("phone", "").replace("+", "")
+                "phone": data.get("phone", "").replace("+", "").replace(" ", "")
             },
+
             "ip": ip,
             "funnel": "Cryptomind",
             "landingURL": "https://walloram.onrender.com",
@@ -38,17 +45,17 @@ def submit():
             "lang": "ru",
             "landingLang": "ru",
             "comment": None,
-            "userAgent": request.headers.get("User-Agent")
+            "userAgent": request.headers.get("User-Agent"),
         }
 
-        CRM_URL = "https://golden-vault.hn-crm.com/api/v1/lead/create"
+        CRM_URL = "https://golden-vault.hn-crm.com/api/external/integration/lead"
 
         headers = {
             "Content-Type": "application/json",
-            "x-api-key": "573d022a-83fd-4ea9-879f-0e6dee76374f"
+            "Api-Key": "573d022a-83fd-4ea9-879f-0e6dee76374f"
         }
 
-        response = requests.post(CRM_URL, json=payload, headers=headers)
+        response = requests.post(CRM_URL, json=payload, headers=headers, timeout=25)
 
         return jsonify({
             "success": True,
@@ -59,6 +66,7 @@ def submit():
 
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
