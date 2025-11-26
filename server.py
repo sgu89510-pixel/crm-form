@@ -17,14 +17,10 @@ def submit():
         if not data:
             return jsonify({"success": False, "error": "Нет данных"}), 400
 
-        # Определяем IP лида
+        # Корректное получение IP пользователя
         forwarded = request.headers.get("X-Forwarded-For", "")
-        if forwarded:
-            ip = forwarded.split(",")[0]
-        else:
-            ip = request.remote_addr
+        ip = forwarded.split(",")[0] if forwarded else request.remote_addr
 
-        # Готовим payload строго по CRM
         payload = {
             "affc": "AFF-74J7Q3VWER",
             "bxc": "BX-2FIXYD4ZPIXOW",
@@ -35,7 +31,7 @@ def submit():
                 "lastName": data.get("lastName", ""),
                 "email": data.get("email", ""),
                 "password": "Temp12345!",
-                "phone": data.get("phone", "").replace("+", "").replace(" ", "")
+                "phone": data.get("phone", "").replace("+", "")
             },
 
             "ip": ip,
@@ -44,18 +40,19 @@ def submit():
             "geo": "RU",
             "lang": "ru",
             "landingLang": "ru",
-            "comment": None,
+
             "userAgent": request.headers.get("User-Agent"),
+            "comment": None
         }
 
         CRM_URL = "https://golden-vault.hn-crm.com/api/external/integration/lead"
 
         headers = {
             "Content-Type": "application/json",
-            "Api-Key": "573d022a-83fd-4ea9-879f-0e6dee76374f"
+            "x-api-key": "573d022a-83fd-4ea9-879f-0e6dee76374f"
         }
 
-        response = requests.post(CRM_URL, json=payload, headers=headers, timeout=25)
+        response = requests.post(CRM_URL, json=payload, headers=headers)
 
         return jsonify({
             "success": True,
