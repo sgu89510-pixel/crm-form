@@ -6,7 +6,8 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return send_from_directory("", "lead_form.html")   # твоя форма
+    return send_from_directory("", "lead_form.html")
+
 
 @app.route("/submit", methods=["POST"])
 def submit():
@@ -16,7 +17,7 @@ def submit():
         if not data:
             return jsonify({"success": False, "error": "Нет данных"}), 400
 
-        # IP корректно (Render → X-Forwarded-For)
+        # Получаем IP пользователя
         forwarded = request.headers.get("X-Forwarded-For", "")
         if forwarded:
             ip = forwarded.split(",")[0]
@@ -33,7 +34,7 @@ def submit():
                 "lastName": data.get("lastName", ""),
                 "email": data.get("email", ""),
                 "password": "Temp12345!",
-                "phone": data.get("phone", "").replace("+", "").replace(" ", "")
+                "phone": data.get("phone", "").replace("+", "")
             },
 
             "ip": ip,
@@ -42,18 +43,19 @@ def submit():
             "geo": "RU",
             "lang": "ru",
             "landingLang": "ru",
+
             "userAgent": request.headers.get("User-Agent"),
             "comment": None
         }
 
-        CRM_URL = "https://golden-vault.hn-crm.com/api/lead/create"
+        CRM_URL = "https://golden-vault.hn-crm.com/api/external/integration/lead"
 
         headers = {
             "Content-Type": "application/json",
-            "Api-Key": "573d022a-83fd-4ea9-879f-0e6dee76374f"
+            "x-api-key": "573d022a-83fd-4ea9-879f-0e6dee76374f"
         }
 
-        response = requests.post(CRM_URL, json=payload, headers=headers, timeout=20)
+        response = requests.post(CRM_URL, json=payload, headers=headers, timeout=25)
 
         return jsonify({
             "success": True,
