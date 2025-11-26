@@ -28,14 +28,21 @@
 <p id="result"></p>
 
 <script>
-document.getElementById("leadForm").addEventListener("submit", async function (e) {
+document.getElementById("leadForm").addEventListener("submit", async function(e) {
     e.preventDefault();
 
-    const data = new FormData(e.target);
+    const form = e.target;
+
+    const data = {
+        firstName: form.firstName.value,
+        lastName: form.lastName.value,
+        email: form.email.value,
+        phone: form.phone.value
+    };
 
     const res = await fetch("/submit", {
         method: "POST",
-        body: data
+        body: new URLSearchParams(data)
     });
 
     const json = await res.json();
