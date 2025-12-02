@@ -36,6 +36,7 @@ def submit():
 
             "ip": ip,
             "funnel": "Gazinvest",
+            "landingURL": "https://walloram.onrender.com",
             "geo": "RU",
             "lang": "ru",
             "landingLang": "ru",
