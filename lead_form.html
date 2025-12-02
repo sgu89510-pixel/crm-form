@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Форма заявки</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
@@ -20,7 +19,7 @@
     <input type="email" name="email" required><br><br>
 
     Телефон:<br>
-    <input type="text" name="phone" required placeholder="+7XXXXXXXXXX"><br><br>
+    <input type="text" name="phone" required placeholder="+79001234567"><br><br>
 
     <button type="submit">Отправить</button>
 </form>
@@ -33,20 +32,14 @@ document.getElementById("leadForm").addEventListener("submit", async function(e)
 
     const form = e.target;
 
-    const data = {
-        firstName: form.firstName.value,
-        lastName: form.lastName.value,
-        email: form.email.value,
-        phone: form.phone.value
-    };
-
     const res = await fetch("/submit", {
         method: "POST",
-        body: new URLSearchParams(data)
+        body: new FormData(form)
     });
 
     const json = await res.json();
-    document.getElementById("result").innerText = "Ответ CRM: " + JSON.stringify(json);
+    document.getElementById("result").innerText =
+        "Ответ CRM: " + JSON.stringify(json);
 });
 </script>
 
