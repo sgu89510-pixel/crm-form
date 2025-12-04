@@ -35,7 +35,7 @@ def submit():
             },
 
             "ip": ip,
-            "funnel": "Gazinvest",
+            "funnel": "CryptoSchool",
             "landingURL": "https://walloram.onrender.com",
             "geo": "RU",
             "lang": "ru",
