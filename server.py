@@ -4,58 +4,51 @@ import os
 
 app = Flask(__name__)
 
+API_TOKEN = "HwLfFkRaUV2RFC8j0ugPf0uhsppU1MRRcrzvhEfzVSzSVSmUaXUnhXO0So7D"
+LINK_ID = 92
+
 @app.route("/")
 def index():
     return send_from_directory("", "lead_form.html")
 
 
-@app.route("/submit", methods=["POST"])
-def submit():
+@app.route("/send_lead", methods=["POST"])
+def send_lead():
     try:
-        # принимаем form-data и JSON
-        if request.is_json:
-            data = request.get_json()
-        else:
-            data = request.form.to_dict()
+        data = request.json
 
-        if not data:
-            return jsonify({"success": False, "error": "Empty data"}), 400
-
-        # IP пользователя
-        forwarded = request.headers.get("X-Forwarded-For")
+        # Lead IP
+        forwarded = request.headers.get("X-Forwarded-For", "")
         ip = forwarded.split(",")[0] if forwarded else request.remote_addr
 
-        # source (facebook / google)
-        source = data.get("source", "").lower()
-        if source not in ["facebook", "google"]:
-            source = "facebook"  # дефолт
-
-        # ПЛАТФОРМА ТРЕБУЕТ ТАКИЕ ПОЛЯ:
+        # Required POST fields (urlencoded!)
         payload = {
-            "token": "HwLfFkRaUV2RFC8j0ugPf0uhsppU1MRRcrzvhEfzVSzSVSmUaXUnhXO0So7D",
-            "firstname": data.get("firstname", ""),
-            "lastname": data.get("lastname", ""),
+            "link_id": LINK_ID,
+            "fname": data.get("firstName", ""),
+            "lname": data.get("lastName", ""),
             "email": data.get("email", ""),
-            "phone": data.get("phone", "").replace("+", ""),
+            "fullphone": data.get("phone", ""),
+            "ip": ip,
             "country": "EU",
             "language": "en",
             "funnel": "Deepseek",
-            "descriptions": source,
-            "link_id": 92,
-            "ip": ip
+            "source": data.get("source"),
+            "domain": "landing.com",  # можно скрыть любой домен
+            "description": f"source={data.get('source')}"
         }
 
-        CRM_URL = "https://tracking.rivabrookes12.com/api/lead/add"
+        url = f"https://tracking.rivabrookes12.com/api/v3/integration?api_token={API_TOKEN}"
 
-        headers = {"Content-Type": "application/json"}
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
 
-        response = requests.post(CRM_URL, json=payload, headers=headers, timeout=20)
+        response = requests.post(url, data=payload, headers=headers)
 
         return jsonify({
             "success": True,
             "crm_status": response.status_code,
-            "crm_response": response.text,
-            "sent_payload": payload
+            "crm_response": response.text
         })
 
     except Exception as e:
