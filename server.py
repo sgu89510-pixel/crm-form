@@ -4,8 +4,6 @@ import os
 
 app = Flask(__name__)
 
-API_TOKEN = "HwLfFkRaUV2RFC8j0ugPf0uhsppU1MRRcrzvhEfzVSzSVSmUaXUnhXO0So7D"
-LINK_ID = 92
 
 @app.route("/")
 def index():
@@ -17,26 +15,35 @@ def send_lead():
     try:
         data = request.json
 
-        # Lead IP
+        # Получаем IP пользователя
         forwarded = request.headers.get("X-Forwarded-For", "")
-        ip = forwarded.split(",")[0] if forwarded else request.remote_addr
+        if forwarded:
+            ip = forwarded.split(",")[0]
+        else:
+            ip = request.remote_addr
 
-        # Required POST fields (urlencoded!)
+        # --- CRM SETTINGS ---
+        API_TOKEN = "HwLfFkRaUV2RFC8j0ugPf0uhsppU1MRRcrzvhEfzVSzSVSmUaXUnhXO0So7D"
+        LINK_ID = 92
+        FUNNEL = "Deepseek"
+
+        # Формируем payload строго по их API (form-urlencoded)
         payload = {
             "link_id": LINK_ID,
-            "fname": data.get("firstName", ""),
-            "lname": data.get("lastName", ""),
-            "email": data.get("email", ""),
-            "fullphone": data.get("phone", ""),
+            "fname": data.get("firstName"),
+            "lname": data.get("lastName"),
+            "email": data.get("email"),
+            "fullphone": data.get("phone"),
             "ip": ip,
-            "country": "EU",
+            "country": "EU",                 # ты сказал GEO = Европа
             "language": "en",
-            "funnel": "Deepseek",
-            "source": data.get("source"),
-            "domain": "landing.com",  # можно скрыть любой домен
-            "description": f"source={data.get('source')}"
+            "source": data.get("source"),    # FB or Google
+            "funnel": FUNNEL,
+            "domain": "form",                # можем скрыть домен
+            "description": data.get("source"),  # передаём source
         }
 
+        # URL вида /api/v3/integration?api_token=TOKEN
         url = f"https://tracking.rivabrookes12.com/api/v3/integration?api_token={API_TOKEN}"
 
         headers = {
@@ -48,7 +55,8 @@ def send_lead():
         return jsonify({
             "success": True,
             "crm_status": response.status_code,
-            "crm_response": response.text
+            "crm_response": response.text,
+            "sent_payload": payload
         })
 
     except Exception as e:
