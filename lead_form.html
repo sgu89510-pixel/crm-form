@@ -3,23 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <title>Форма заявки</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
-<h2>Форма заявки</h2>
+<h2>Оставьте заявку</h2>
 
 <form id="leadForm">
+
     Имя:<br>
     <input type="text" name="firstName" required><br><br>
 
     Фамилия:<br>
     <input type="text" name="lastName" required><br><br>
 
-    Почта:<br>
+    Телефон:<br>
+    <input type="text" name="phone" placeholder="+79995553322" required><br><br>
+
+    E-mail:<br>
     <input type="email" name="email" required><br><br>
 
-    Телефон:<br>
-    <input type="text" name="phone" required placeholder="+79001234567"><br><br>
+    Источник трафика (facebook / google):<br>
+    <select name="source">
+        <option value="facebook">Facebook</option>
+        <option value="google">Google</option>
+    </select>
+    <br><br>
 
     <button type="submit">Отправить</button>
 </form>
@@ -27,14 +36,23 @@
 <p id="result"></p>
 
 <script>
-document.getElementById("leadForm").addEventListener("submit", async function(e) {
+document.getElementById("leadForm").addEventListener("submit", async function(e){
     e.preventDefault();
 
     const form = e.target;
 
-    const res = await fetch("/submit", {
+    const data = {
+        firstName: form.firstName.value,
+        lastName: form.lastName.value,
+        phone: form.phone.value,
+        email: form.email.value,
+        source: form.source.value
+    };
+
+    const res = await fetch("/send_lead", {
         method: "POST",
-        body: new FormData(form)
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
     });
 
     const json = await res.json();
