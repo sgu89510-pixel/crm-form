@@ -4,42 +4,62 @@ import os
 
 app = Flask(__name__)
 
+
 @app.route("/")
 def index():
     return send_from_directory("", "lead_form.html")
 
 
-@app.route("/send_lead", methods=["POST"])
-def send_lead():
+@app.route("/submit", methods=["POST"])
+def submit():
     try:
-        data = request.json
+        data = request.form.to_dict()
 
-        # Получаем IP
+        if not data:
+            return jsonify({"success": False, "error": "No data received"}), 400
+
+        # Получаем корректный IP клиента
         forwarded = request.headers.get("X-Forwarded-For", "")
-        ip = forwarded.split(",")[0] if forwarded else request.remote_addr
+        if forwarded:
+            ip = forwarded.split(",")[0]
+        else:
+            ip = request.remote_addr
 
-        # CRM endpoint
-        API_TOKEN = "HwLfFkRaUV2RFC8j0ugPf0uhsppU1MRRcrzvhEfzVSzSVSmUaXUnhXO0So7D"
-        CRM_URL = f"https://tracking.rivabrookes12.com/api/v3/integration?api_token={API_TOKEN}"
+        # Определяем источник трафика (FB/Google)
+        source = request.args.get("utm_source", "").lower()
+        if source in ["facebook", "fb"]:
+            traffic_source = "facebook"
+        elif source in ["google", "g"]:
+            traffic_source = "google"
+        else:
+            traffic_source = "unknown"
 
-        # Формируем payload в формате "x-www-form-urlencoded"
+        # Формируем описание (description)
+        description = f"Traffic source: {traffic_source}"
+
+        # Формируем payload
         payload = {
+            "token": "HwLfFkRaUV2RFC8j0ugPf0uhsppU1MRRcrzvhEfzVSzSVSmUaXUnhXO0So7D",
             "link_id": 92,
-            "fname": data.get("firstName", ""),
-            "lname": data.get("lastName", ""),
+            "firstname": data.get("firstname", ""),
+            "lastname": data.get("lastname", ""),
             "email": data.get("email", ""),
-            "fullphone": data.get("phone", ""),
-            "ip": ip,
-            "country": "RU",
-            "language": "ru",
+            "phone": data.get("phone", "").replace("+", ""),
+            "country": "EU",
+            "language": "en",
             "funnel": "Deepseek",
-            "domain": "form-landing.site",  # подмена домена
-            "description": data.get("source", "facebook")  # facebook / google
+            "comment": "",
+            "description": description,
+            "ip": ip
         }
 
-        # Отправка
-        headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        response = requests.post(CRM_URL, data=payload, headers=headers, timeout=20)
+        CRM_URL = "https://tracking.rivabrookes12.com/api/v1/lead"
+
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        response = requests.post(CRM_URL, json=payload, headers=headers)
 
         return jsonify({
             "success": True,
