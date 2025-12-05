@@ -4,7 +4,6 @@ import os
 
 app = Flask(__name__)
 
-
 @app.route("/")
 def index():
     return send_from_directory("", "lead_form.html")
@@ -18,48 +17,34 @@ def submit():
         if not data:
             return jsonify({"success": False, "error": "No data received"}), 400
 
-        # Получаем корректный IP клиента
+        # Получаем IP клиента
         forwarded = request.headers.get("X-Forwarded-For", "")
         if forwarded:
             ip = forwarded.split(",")[0]
         else:
             ip = request.remote_addr
 
-        # Определяем источник трафика (FB/Google)
-        source = request.args.get("utm_source", "").lower()
-        if source in ["facebook", "fb"]:
-            traffic_source = "facebook"
-        elif source in ["google", "g"]:
-            traffic_source = "google"
-        else:
-            traffic_source = "unknown"
-
-        # Формируем описание (description)
-        description = f"Traffic source: {traffic_source}"
-
         # Формируем payload
         payload = {
             "token": "HwLfFkRaUV2RFC8j0ugPf0uhsppU1MRRcrzvhEfzVSzSVSmUaXUnhXO0So7D",
-            "link_id": 92,
-            "firstname": data.get("firstname", ""),
-            "lastname": data.get("lastname", ""),
+            "firstname": data.get("firstName", ""),
+            "lastname": data.get("lastName", ""),
             "email": data.get("email", ""),
             "phone": data.get("phone", "").replace("+", ""),
             "country": "EU",
             "language": "en",
             "funnel": "Deepseek",
             "comment": "",
-            "description": description,
+            "descriptions": data.get("source", ""),   # facebook / google
+            "link_id": 92,
             "ip": ip
         }
 
         CRM_URL = "https://tracking.rivabrookes12.com/api/v1/lead"
 
-        headers = {
-            "Content-Type": "application/json"
-        }
+        headers = {"Content-Type": "application/json"}
 
-        response = requests.post(CRM_URL, json=payload, headers=headers)
+        response = requests.post(CRM_URL, json=payload, headers=headers, timeout=20)
 
         return jsonify({
             "success": True,
