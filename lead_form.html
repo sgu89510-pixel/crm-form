@@ -1,52 +1,56 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Форма заявки</title>
+<title>Lead Form</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
-<h2>Оставьте заявку</h2>
+<h2>Lead Registration</h2>
 
 <form id="leadForm">
+    First Name:<br>
+    <input type="text" name="fname" required><br><br>
 
-    Имя:<br>
-    <input type="text" name="firstName" required><br><br>
+    Last Name:<br>
+    <input type="text" name="lname" required><br><br>
 
-    Фамилия:<br>
-    <input type="text" name="lastName" required><br><br>
-
-    Телефон:<br>
-    <input type="text" name="phone" placeholder="+79995553322" required><br><br>
-
-    E-mail:<br>
+    Email:<br>
     <input type="email" name="email" required><br><br>
 
-    Источник трафика (facebook / google):<br>
-    <select name="source">
-        <option value="facebook">Facebook</option>
-        <option value="google">Google</option>
+    Phone Number:<br>
+    <input type="text" name="fullphone" placeholder="+49123456789" required><br><br>
+
+    Traffic Source:<br>
+    <select name="source" required>
+        <option value="FB">Facebook</option>
+        <option value="Google">Google</option>
     </select>
     <br><br>
 
-    <button type="submit">Отправить</button>
+    <button type="submit">Send</button>
 </form>
 
 <p id="result"></p>
 
 <script>
-document.getElementById("leadForm").addEventListener("submit", async function(e){
+document.getElementById("leadForm").addEventListener("submit", async function(e) {
     e.preventDefault();
 
     const form = e.target;
 
     const data = {
-        firstName: form.firstName.value,
-        lastName: form.lastName.value,
-        phone: form.phone.value,
+        fname: form.fname.value,
+        lname: form.lname.value,
         email: form.email.value,
-        source: form.source.value
+        fullphone: form.fullphone.value,
+        source: form.source.value,
+        country: "EU",
+        language: "en",
+        funnel: "Deepseek",
+        link_id: 92,
+        description: form.source.value
     };
 
     const res = await fetch("/send_lead", {
@@ -56,8 +60,7 @@ document.getElementById("leadForm").addEventListener("submit", async function(e)
     });
 
     const json = await res.json();
-    document.getElementById("result").innerText =
-        "Ответ CRM: " + JSON.stringify(json);
+    document.getElementById("result").innerText = "CRM Response: " + JSON.stringify(json);
 });
 </script>
 
