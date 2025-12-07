@@ -1,68 +1,76 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify
 import requests
-import os
+import random
+import string
 
 app = Flask(__name__)
 
+TRACKBOX_URL = "https://track.fintechgurus.org/api/signup/procform"
 
-@app.route("/")
-def index():
-    return send_from_directory("", "lead_form.html")
+AI = "2958294"
+CI = "1"
+GI = "292"
+FUNNEL = "Education 365"
+LANG = "RU"
+
+
+def generate_password(length=10):
+    chars = string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for _ in range(length))
 
 
 @app.route("/send_lead", methods=["POST"])
 def send_lead():
+    data = request.json
+
+    firstname = data.get("firstname")
+    lastname = data.get("lastname")
+    email = data.get("email")
+    phone = data.get("phone")
+    ip = data.get("ip")
+
+    if not all([firstname, lastname, email, phone, ip]):
+        return jsonify({"error": "missing_fields"}), 400
+
+    password = generate_password()
+
+    payload = {
+        "ai": AI,
+        "ci": CI,
+        "gi": GI,
+        "userip": ip,
+        "firstname": firstname,
+        "lastname": lastname,
+        "email": email,
+        "password": password,
+        "phone": phone,
+        "so": FUNNEL,
+        "sub": "",
+        "lg": LANG,
+        # domain для Trackbox обязателен
+        "domain": "track.fintechgurus.org"
+    }
+
+    headers = {
+        "Content-Type": "application/json"
+    }
+
     try:
-        data = request.json
-
-        # Получаем IP пользователя
-        forwarded = request.headers.get("X-Forwarded-For", "")
-        if forwarded:
-            ip = forwarded.split(",")[0]
-        else:
-            ip = request.remote_addr
-
-        # --- CRM SETTINGS ---
-        API_TOKEN = "HwLfFkRaUV2RFC8j0ugPf0uhsppU1MRRcrzvhEfzVSzSVSmUaXUnhXO0So7D"
-        LINK_ID = 92
-        FUNNEL = "Deepseek"
-
-        # Формируем payload строго по их API (form-urlencoded)
-        payload = {
-            "link_id": LINK_ID,
-            "fname": data.get("firstName"),
-            "lname": data.get("lastName"),
-            "email": data.get("email"),
-            "fullphone": data.get("phone"),
-            "ip": ip,
-            "country": "EU",                 # ты сказал GEO = Европа
-            "language": "en",
-            "source": data.get("source"),    # FB or Google
-            "funnel": FUNNEL,
-            "domain": "form",                # можем скрыть домен
-            "description": data.get("source"),  # передаём source
-        }
-
-        # URL вида /api/v3/integration?api_token=TOKEN
-        url = f"https://tracking.rivabrookes12.com/api/v3/integration?api_token={API_TOKEN}"
-
-        headers = {
-            "Content-Type": "application/x-www-form-urlencoded"
-        }
-
-        response = requests.post(url, data=payload, headers=headers)
-
+        response = requests.post(TRACKBOX_URL, json=payload, headers=headers)
         return jsonify({
-            "success": True,
+            "sent_payload": payload,
             "crm_status": response.status_code,
-            "crm_response": response.text,
-            "sent_payload": payload
+            "crm_response": response.text
         })
 
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/")
+def home():
+    return "Trackbox lead receiver is running."
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=10000)
