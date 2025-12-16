@@ -1,88 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>Lead Form</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-    body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; }
-    input, select { width: 100%; padding: 12px; margin: 8px 0; }
-    button {
-        width: 100%; padding: 15px;
-        background: #007bff; color: white;
-        border: none; font-size: 20px; cursor: pointer;
-        border-radius: 8px;
-    }
-    #result { margin-top: 20px; font-size: 18px; }
-</style>
+    <meta charset="UTF-8">
+    <title>Заполнить форму</title>
 </head>
 <body>
 
-<h2>Lead Form</h2>
+<h2>Заполнить форму</h2>
 
-<form id="leadForm">
+<form action="/submit" method="POST">
+    <label>Имя</label><br>
+    <input type="text" name="first_name" required><br><br>
 
-    <label>First Name *</label>
-    <input type="text" name="fname" required>
+    <label>Фамилия</label><br>
+    <input type="text" name="second_name" required><br><br>
 
-    <label>Last Name *</label>
-    <input type="text" name="lname" required>
+    <label>Email</label><br>
+    <input type="email" name="email" required><br><br>
 
-    <label>Email *</label>
-    <input type="email" name="email" required>
+    <label>Телефон</label><br>
+    <input type="tel" name="phone" placeholder="79998887766" required><br><br>
 
-    <label>Phone *</label>
-    <input type="text" name="fullphone" required placeholder="+447700900123">
-
-    <label>Source *</label>
-    <select name="source" required>
-        <option value="Facebook">Facebook</option>
-        <option value="Google">Google</option>
-    </select>
-
-    <button type="submit">Send</button>
+    <button type="submit">Отправить</button>
 </form>
-
-<p id="result"></p>
-
-<script>
-document.getElementById("leadForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
-
-    const form = e.target;
-
-    const data = {
-        fname: form.fname.value,
-        lname: form.lname.value,
-        email: form.email.value,
-        fullphone: form.fullphone.value,
-        source: form.source.value
-    };
-
-    const res = await fetch("/send_lead", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-    });
-
-    const json = await res.json();
-
-    if (json.success) {
-        document.getElementById("result").innerHTML =
-            `<div style="background:#c8f7c5;padding:15px;border-radius:8px;">
-                ✔ Lead sent successfully<br>
-                CRM Status: ${json.crm_status}
-             </div>`;
-    } else {
-        document.getElementById("result").innerHTML =
-            `<div style="background:#f7c5c5;padding:15px;border-radius:8px;">
-                ❌ Error: ${json.error}
-             </div>`;
-    }
-});
-</script>
 
 </body>
 </html>
