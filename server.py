@@ -6,8 +6,12 @@ import json
 
 app = Flask(__name__)
 
+API_URL = "https://affs-lead.info/lion/new-lead"
+API_TOKEN = "A7kR9Tm2QwC5yN8SD0pL4JugM1bF6H"
+
 def generate_password():
-    return "A@" + ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+    # минимум 10 символов, буквы + цифры
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=10))
 
 @app.route("/")
 def index():
@@ -16,59 +20,62 @@ def index():
 @app.route("/submit", methods=["POST"])
 def submit():
 
-    # ДАННЫЕ, КОТОРЫЕ УХОДЯТ В CRM
-    fields = {
-        "api_key": "8ed304133d586ba2b9649d6c60f2a18e",
-        "map_id": 4240,
-        "email": request.form.get("email"),
-        "first_name": request.form.get("first_name"),
-        "second_name": request.form.get("second_name"),
-        "phone": request.form.get("phone"),
-        "country": "RU",
-        "language": "ru",
-        "campaign": "Evropaprigon",
-        "description": "Лид с лендинга",
-        "password": generate_password()
+    # данные из формы
+    payload = {
+        "Name": request.form.get("first_name"),
+        "LastName": request.form.get("last_name"),
+        "Email": request.form.get("email"),
+        "Phone": request.form.get("phone"),
+        "Password": generate_password(),
+        "Country": "RU",
+        "Source": "Landing RU",
+        "Token": API_TOKEN
     }
 
     try:
-        response = requests.post(
-            "https://bestcliq.tech/api/v1/AddLead",
-            data=fields,
-            timeout=15
-        )
-        crm_response_text = response.text
+        response = requests.post(API_URL, data=payload, timeout=15)
         try:
-            crm_response_json = response.json()
+            crm_response = response.json()
         except:
-            crm_response_json = crm_response_text
+            crm_response = response.text
 
     except Exception as e:
         return f"<pre>Request error:\n{str(e)}</pre>", 500
 
-    # 🔍 МАСКИРУЕМ API KEY ДЛЯ ОТОБРАЖЕНИЯ
-    safe_fields = fields.copy()
-    safe_fields["api_key"] = "********"
+    # DEBUG-ОТВЕТ: что ушло и что вернуло CRM
+    safe_payload = payload.copy()
+    safe_payload["Token"] = "********"
 
-    # ✅ HTML ОТВЕТ С REQUEST + RESPONSE
     return f"""
     <html>
     <head>
         <meta charset="utf-8">
-        <title>CRM Debug</title>
+        <title>CRM Response</title>
         <style>
-            body {{ font-family: monospace; background:#111; color:#0f0; padding:20px; }}
-            pre {{ background:#000; padding:15px; border:1px solid #0f0; }}
-            h2 {{ color:#00ffff; }}
+            body {{
+                font-family: monospace;
+                background: #0e0e0e;
+                color: #00ffcc;
+                padding: 20px;
+            }}
+            pre {{
+                background: #000;
+                padding: 15px;
+                border-radius: 6px;
+                border: 1px solid #00ffcc;
+            }}
+            h2 {{
+                color: #ffffff;
+            }}
         </style>
     </head>
     <body>
 
-    <h2>📤 REQUEST TO CRM</h2>
-    <pre>{json.dumps(safe_fields, indent=2, ensure_ascii=False)}</pre>
+        <h2>📤 REQUEST</h2>
+        <pre>{json.dumps(safe_payload, indent=2, ensure_ascii=False)}</pre>
 
-    <h2>📥 CRM RESPONSE</h2>
-    <pre>{json.dumps(crm_response_json, indent=2, ensure_ascii=False)}</pre>
+        <h2>📥 CRM RESPONSE</h2>
+        <pre>{json.dumps(crm_response, indent=2, ensure_ascii=False)}</pre>
 
     </body>
     </html>
